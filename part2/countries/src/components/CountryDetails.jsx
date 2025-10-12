@@ -9,8 +9,11 @@ const CountryDetails = ({ country }) => {
       <h1>{country.name.common}</h1>
       <div>Official name: {country.name.official}</div>
       <div>
+        <div>Region: {country.subregion ?? country.region}</div>
         <div>Capital: {country.capital ? country.capital[0] : 'no data'}</div>
-        <div>Area: {country.area}</div>
+        <div>
+          Area: {country.area.toLocaleString()} km<sup>2</sup>
+        </div>
       </div>
 
       <div>
