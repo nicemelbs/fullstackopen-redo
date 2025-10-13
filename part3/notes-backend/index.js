@@ -1,5 +1,4 @@
 const express = require('express')
-const cors = require('cors')
 const app = express()
 let notes = [
   { id: '1', content: 'HTML is easy', important: true },
@@ -11,7 +10,7 @@ let notes = [
   },
 ]
 
-app.use(cors())
+app.use(express.static('dist'))
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)

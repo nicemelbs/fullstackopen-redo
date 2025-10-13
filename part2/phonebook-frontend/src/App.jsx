@@ -103,6 +103,7 @@ const App = () => {
       personsService.remove(id).then((returnedPerson) => {
         setPersons(persons.filter((p) => p.id !== returnedPerson.id))
 
+        console.log('deleting...', returnedPerson.name)
         setNotificationAndClearAfterNSeconds(
           `Information for ${returnedPerson.name} successfully deleted.`,
           'success',

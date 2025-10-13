@@ -33,9 +33,14 @@ const requestLogger = morgan(
   ':method :url :status :res[content-length] - :response-time ms :req-body'
 )
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'nonexistent endpoint' })
+}
+
 app.use(express.json())
 app.use(requestLogger)
 
+app.use(express.static('dist'))
 app.get('/info', (request, response) => {
   response.send(
     `Phonebook has info for ${persons.length} people<br/>${new Date()}`
@@ -57,9 +62,11 @@ app.get('/api/persons/:id', (request, response) => {
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
+  const person = persons.find((p) => p.id === id)
   persons = persons.filter((p) => p.id !== id)
+  console.log('backend.index.js.delete.', person)
 
-  response.status(204).end()
+  response.json(person)
 })
 
 const getRandomId = (max) => {
@@ -90,6 +97,26 @@ app.post('/api/persons', (request, response) => {
   response.json(person)
 })
 
+app.put('/api/persons/:id', (request, response) => {
+  const body = request.body
+  if (!body.number)
+    return response
+      .status(400)
+      .json({ error: 'malformed request. number is required' })
+
+  const id = request.params.id
+  const oldPerson = persons.find((person) => id === person.id)
+
+  const updatedPerson = {
+    ...oldPerson,
+    number: request.body.number,
+  }
+
+  persons = persons.map((person) => (person.id === id ? updatedPerson : person))
+  response.json(updatedPerson)
+})
+
+app.use(unknownEndpoint)
 const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
