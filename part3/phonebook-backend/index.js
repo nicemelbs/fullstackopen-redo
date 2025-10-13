@@ -64,7 +64,6 @@ app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
   const person = persons.find((p) => p.id === id)
   persons = persons.filter((p) => p.id !== id)
-  console.log('backend.index.js.delete.', person)
 
   response.json(person)
 })
