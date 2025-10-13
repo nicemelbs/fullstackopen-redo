@@ -24,20 +24,14 @@ let persons = [
     number: '39-23-6423122',
   },
 ]
-// morgan(':method :url :status :res[content-length] - :response-time ms')
 
-const requestLogger = morgan((tokens, request, response) => {
-  return [
-    tokens.method(request, response),
-    tokens.url(request, response),
-    tokens.status(request, response),
-    tokens.res(request, response, 'content-length'),
-    '-',
-    tokens['response-time'](request, response),
-    'ms',
-    JSON.stringify(request.body),
-  ].join(' ')
+morgan.token('req-body', (request, response) => {
+  return JSON.stringify(request.body)
 })
+
+const requestLogger = morgan(
+  ':method :url :status :res[content-length] - :response-time ms :req-body'
+)
 
 app.use(express.json())
 app.use(requestLogger)
@@ -74,8 +68,6 @@ const getRandomId = (max) => {
 app.post('/api/persons', (request, response) => {
   const body = request.body
   let error = []
-
-  console.log('body:', body)
 
   if (!body.name) error = error.concat('name is required')
   if (!body.number) error = error.concat('number is required')
