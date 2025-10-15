@@ -1,29 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
 
-let persons = [
-  {
-    id: '1',
-    name: 'Arto Hellas',
-    number: '040-123456',
-  },
-  {
-    id: '2',
-    name: 'Ada Lovelace',
-    number: '39-44-5323523',
-  },
-  {
-    id: '3',
-    name: 'Dan Abramov',
-    number: '12-43-234345',
-  },
-  {
-    id: '4',
-    name: 'Mary Poppendieck',
-    number: '39-23-6423122',
-  },
-]
+const Person = require('./models/person')
+
+const PORT = process.env.PORT
 
 morgan.token('req-body', (request, response) => {
   return JSON.stringify(request.body)
@@ -48,52 +30,66 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({})
+    .then((persons) => {
+      response.json(persons)
+    })
+    .catch((error) => {
+      console.log(error)
+      response.status(500).end()
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  const person = persons.find((p) => p.id === id)
+  // const person = persons.find((p) => p.id === id)
 
-  if (!person) {
-    response.status(404).end()
-  } else response.json(person)
+  Person.findOne({ _id: id }).then((person) => {
+    if (!person) response.status(404).json({ error: 'no entry found' })
+    else response.json(person)
+  })
+
+  // if (!person) {
+  //   response.status(404).end()
+  // } else response.json(person)
 })
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  const person = persons.find((p) => p.id === id)
-  persons = persons.filter((p) => p.id !== id)
 
-  response.json(person)
+  Person.findByIdAndDelete(id)
+    .then((person) => {
+      if (!person) {
+        response.status(400).json({ error: 'no matching entry.' })
+      } else response.json(person)
+    })
+    .catch((error) => response.status(500).json({ error: error.message }))
 })
 
-const getRandomId = (max) => {
-  return String(Math.floor(Math.random() * max))
-}
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  let error = []
 
-  if (!body.name) error = error.concat('name is required')
-  if (!body.number) error = error.concat('number is required')
+  // if (!body.name) error = error.concat('name is required')
+  // if (!body.number) error = error.concat('number is required')
 
-  if (persons.find((p) => p.name === body.name))
-    error = error.concat(`${body.name} already exists in the phonebook`)
+  // if (persons.find((p) => p.name === body.name))
+  //   error = error.concat(`${body.name} already exists in the phonebook`)
 
-  if (error.length > 0) {
-    console.log('error:', error)
-    return response.status(400).json(error)
-  }
+  // if (error.length > 0) {
+  //   console.log('error:', error)
+  //   return response.status(400).json(error)
+  // }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: getRandomId(903310),
-  }
+    // id: getRandomId(903310),
+  })
 
-  persons = persons.concat(person)
-  response.json(person)
+  person
+    .save()
+    .then((savedPerson) => response.json(savedPerson))
+    .catch((error) => response.status(500).json({ error: error.message }))
 })
 
 app.put('/api/persons/:id', (request, response) => {
@@ -104,19 +100,19 @@ app.put('/api/persons/:id', (request, response) => {
       .json({ error: 'malformed request. number is required' })
 
   const id = request.params.id
-  const oldPerson = persons.find((person) => id === person.id)
 
-  const updatedPerson = {
-    ...oldPerson,
-    number: request.body.number,
-  }
-
-  persons = persons.map((person) => (person.id === id ? updatedPerson : person))
-  response.json(updatedPerson)
+  Person.findOneAndUpdate(
+    { _id: id },
+    { number: body.number },
+    { returnOriginal: false }
+  ).then((updatedPerson) => {
+    if (!updatedPerson)
+      response.status(404).json({ error: 'something went wrong!' })
+    else response.json(updatedPerson)
+  })
 })
 
 app.use(unknownEndpoint)
-const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
