@@ -75,15 +75,20 @@ const App = () => {
           })
       }
     } else {
-      personsService.create(newPersonObject).then((returnedPerson) => {
-        setPersons(persons.concat(returnedPerson))
-        clearInputs()
-        setNotificationAndClearAfterNSeconds(
-          `${returnedPerson.name} (${returnedPerson.number})  successfully added.`,
-          'success',
-          5
-        )
-      })
+      personsService
+        .create(newPersonObject)
+        .then((returnedPerson) => {
+          setPersons(persons.concat(returnedPerson))
+          clearInputs()
+          setNotificationAndClearAfterNSeconds(
+            `${returnedPerson.name} (${returnedPerson.number})  successfully added.`,
+            'success',
+            5
+          )
+        })
+        .catch((error) => {
+          setNotificationAndClearAfterNSeconds(error.response.data, 'error', 5)
+        })
     }
   }
 
@@ -103,7 +108,6 @@ const App = () => {
       personsService.remove(id).then((returnedPerson) => {
         setPersons(persons.filter((p) => p.id !== returnedPerson.id))
 
-        console.log('deleting...', returnedPerson.name)
         setNotificationAndClearAfterNSeconds(
           `Information for ${returnedPerson.name} successfully deleted.`,
           'success',
