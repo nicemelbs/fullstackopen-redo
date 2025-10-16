@@ -7,7 +7,7 @@ const Person = require('./models/person')
 
 const PORT = process.env.PORT
 
-morgan.token('req-body', (request, response) => {
+morgan.token('req-body', (request) => {
   return JSON.stringify(request.body)
 })
 
