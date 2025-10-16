@@ -3,15 +3,6 @@ const express = require('express')
 const app = express()
 
 const Note = require('./models/note')
-let notes = [
-  { id: '1', content: 'HTML is easy', important: true },
-  { id: '2', content: 'Browser can execute only JavaScript', important: false },
-  {
-    id: '3',
-    content: 'GET and POST are the most important methods of HTTP protocol',
-    important: true,
-  },
-]
 
 const PORT = process.env.PORT
 
