@@ -19,82 +19,76 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'nonexistent endpoint' })
 }
 
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
 app.use(express.json())
 app.use(requestLogger)
 
 app.use(express.static('dist'))
-app.get('/info', (request, response) => {
-  response.send(
-    `Phonebook has info for ${persons.length} people<br/>${new Date()}`
-  )
+app.get('/info', (request, response, next) => {
+  Person.countDocuments({})
+    .then((count) =>
+      response.send(`Phonebook has info for ${count} people<br/>${new Date()}`)
+    )
+    .catch((error) => next(error))
 })
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   Person.find({})
     .then((persons) => {
       response.json(persons)
     })
     .catch((error) => {
-      console.log(error)
-      response.status(500).end()
+      next(error)
     })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
-  // const person = persons.find((p) => p.id === id)
 
-  Person.findOne({ _id: id }).then((person) => {
-    if (!person) response.status(404).json({ error: 'no entry found' })
-    else response.json(person)
-  })
-
-  // if (!person) {
-  //   response.status(404).end()
-  // } else response.json(person)
+  Person.findById(id)
+    .then((person) => {
+      if (!person) return response.status(404).json({ error: 'no entry found' })
+      else response.json(person)
+    })
+    .catch((error) => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
 
   Person.findByIdAndDelete(id)
     .then((person) => {
       if (!person) {
-        response.status(400).json({ error: 'no matching entry.' })
+        return response.status(400).end()
       } else response.json(person)
     })
-    .catch((error) => response.status(500).json({ error: error.message }))
+    .catch((error) => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
-  const body = request.body
+app.post('/api/persons', (request, response, next) => {
+  const { name, number } = request.body
 
-  // if (!body.name) error = error.concat('name is required')
-  // if (!body.number) error = error.concat('number is required')
-
-  // if (persons.find((p) => p.name === body.name))
-  //   error = error.concat(`${body.name} already exists in the phonebook`)
-
-  // if (error.length > 0) {
-  //   console.log('error:', error)
-  //   return response.status(400).json(error)
-  // }
-
-  const person = new Person({
-    name: body.name,
-    number: body.number,
-    // id: getRandomId(903310),
-  })
+  const person = new Person({ name: name, number: number })
 
   person
     .save()
     .then((savedPerson) => response.json(savedPerson))
-    .catch((error) => response.status(500).json({ error: error.message }))
+    .catch((error) => next(error))
 })
 
-app.put('/api/persons/:id', (request, response) => {
-  const body = request.body
-  if (!body.number)
+app.put('/api/persons/:id', (request, response, next) => {
+  const number = request.body.number
+
+  if (!number)
     return response
       .status(400)
       .json({ error: 'malformed request. number is required' })
@@ -103,16 +97,18 @@ app.put('/api/persons/:id', (request, response) => {
 
   Person.findOneAndUpdate(
     { _id: id },
-    { number: body.number },
+    { number: number },
     { returnOriginal: false }
-  ).then((updatedPerson) => {
-    if (!updatedPerson)
-      response.status(404).json({ error: 'something went wrong!' })
-    else response.json(updatedPerson)
-  })
+  )
+    .then((updatedPerson) => {
+      if (!updatedPerson) return response.status(404).end()
+      else response.json(updatedPerson)
+    })
+    .catch((error) => next(error))
 })
 
 app.use(unknownEndpoint)
+app.use(errorHandler)
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
