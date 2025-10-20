@@ -1,5 +1,9 @@
 const _ = require('lodash')
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+
 const initialBlogs = [
   {
     _id: '5a422a851b54a676234d17f7',
@@ -78,6 +82,34 @@ const totalLikes = (blogs) => {
   }, 0)
 }
 
+const logInAndGetToken = async () => {
+  const usersCount = await User.countDocuments({})
+  if (usersCount === 0) {
+    await createNewUser()
+  }
+
+  const user = await User.findOne({})
+
+  const userForToken = { username: user.username, id: user._id }
+  const token = jwt.sign(userForToken, process.env.SECRET, {
+    expiresIn: 60 * 60,
+  })
+  return `Bearer ${token}`
+}
+
+const createNewUser = async () => {
+  const newUser = { username: 'hello', password: 'world', name: 'hello world' }
+  const passwordHash = await bcrypt.hash(newUser.password, 10)
+
+  const newUserObject = new User({
+    username: newUser.username,
+    passwordHash: passwordHash,
+    name: newUser.name,
+  })
+
+  await newUserObject.save()
+}
+
 //return blog with most likes. if there are more than 1 with most blogs, just return one
 const favoriteBlog = (blogs) => {
   if (blogs.length === 0) return null
@@ -139,4 +171,5 @@ module.exports = {
   favoriteBlog,
   mostBlogs,
   mostLikes,
+  logInAndGetToken,
 }
