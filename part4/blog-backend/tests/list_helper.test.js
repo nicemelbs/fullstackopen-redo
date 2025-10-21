@@ -310,6 +310,7 @@ describe.only('blogs', () => {
         .expect('Content-Type', /application\/json/)
 
       await anotherUserObject.deleteOne()
+      await blogInsertToBeDeleted.deleteOne()
     })
   })
   after(async () => {
