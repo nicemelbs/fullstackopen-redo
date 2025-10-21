@@ -96,7 +96,6 @@ const App = () => {
       blogFormRef.current.toggleVisibility()
     } catch (error) {
       setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
-      // console.log(error)
     }
   }
 
