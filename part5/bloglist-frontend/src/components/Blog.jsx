@@ -1,9 +1,9 @@
 import { useState } from 'react'
 const Blog = ({ blog, handleLike, handleDelete }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
+  const currentUser = JSON.parse(window.localStorage.getItem('loggedInUser'))
   const deleteButtonVisible =
-    JSON.parse(window.localStorage.getItem('loggedInUser')).username ===
-    blog.user.username
+    currentUser && currentUser.username === blog.user.username
   return (
     <div className="blog">
       <span className="blog-title">{blog.title}</span> by{' '}
@@ -13,11 +13,11 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
       </button>
       {detailsVisible && (
         <div>
-          <a target="_blank" href={blog.url}>
+          <a className="blog-url" target="_blank" href={blog.url}>
             {blog.url}
           </a>
           <br />
-          likes {blog.likes}{' '}
+          <span className="blog-likes">likes {blog.likes}</span>
           <button onClick={() => handleLike(blog)}>like</button>
           <br />
           {blog.user.name}
