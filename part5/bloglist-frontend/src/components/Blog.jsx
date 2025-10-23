@@ -1,11 +1,13 @@
 import { useState } from 'react'
 const Blog = ({ blog, handleLike, handleDelete }) => {
+  console.log(blog)
+
   const [detailsVisible, setDetailsVisible] = useState(false)
   const currentUser = JSON.parse(window.localStorage.getItem('loggedInUser'))
   const deleteButtonVisible =
     currentUser && currentUser.username === blog.user.username
   return (
-    <div className="blog">
+    <li className="blog">
       <span className="blog-title">{blog.title}</span> by{' '}
       <span className="blog-author">{blog.author}</span>
       <button onClick={() => setDetailsVisible(!detailsVisible)}>
@@ -27,7 +29,7 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
           )}
         </div>
       )}
-    </div>
+    </li>
   )
 }
 

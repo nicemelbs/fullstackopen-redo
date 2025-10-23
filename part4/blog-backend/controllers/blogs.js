@@ -27,7 +27,6 @@ blogsRouter.delete('/:id', userExtractor, async (request, response) => {
     response.status(403).json({ error: 'you do not own this blog' }).end()
   else {
     user.blogs = user.blogs.filter((blog) => {
-      console.log('blog._id', String(blog._id))
       return String(blog._id) !== id
     })
 
@@ -52,7 +51,8 @@ blogsRouter.post('/', async (request, response) => {
     user: user._id,
   })
 
-  const savedBlog = await blog.save()
+  const savedBlog = await blog.populate('user', { username: 1, name: 1 })
+  savedBlog.save()
 
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
