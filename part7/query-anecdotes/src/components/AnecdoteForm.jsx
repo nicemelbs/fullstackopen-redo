@@ -1,7 +1,11 @@
+import { useContext } from 'react'
 import { createAnecdote } from '../requests'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import NotificationContext from '../NotificationContext'
 const AnecdoteForm = () => {
   const queryClient = useQueryClient()
+  const { flashNotificationForDuration } = useContext(NotificationContext)
+
   const onCreate = (event) => {
     event.preventDefault()
     const content = event.target.anecdote.value
@@ -14,13 +18,17 @@ const AnecdoteForm = () => {
     onSuccess: (newAnecdote) => {
       const anecdotes = queryClient.getQueryData(['anecdotes'])
       queryClient.setQueryData(['anecdotes'], anecdotes.concat(newAnecdote))
+
+      flashNotificationForDuration({
+        kind: 'success',
+        message: `You posted "${newAnecdote.content}"`,
+      })
     },
     onError: (error) => {
-      queryClient.setQueryData(['notification'], error.message)
-      setTimeout(() => {
-        queryClient.setQueryData(['notification'], null)
-        console.log('notification cleared.')
-      }, 5000)
+      flashNotificationForDuration({
+        kind: 'error',
+        message: error.message,
+      })
     },
   })
   return (
