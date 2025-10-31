@@ -1,0 +1,1 @@
+I am not aware if the bloglist app will be edited in future exercises beyond part 7. This part is only for part 7f, exerices 7.10-7.21. The backend and frontend folders are copied from their state before I arrived in this part.
