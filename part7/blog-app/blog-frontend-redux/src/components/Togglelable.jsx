@@ -1,4 +1,4 @@
-import { useState, useImperativeHandle } from 'react'
+import React, { useState, useImperativeHandle } from 'react'
 const Toggleable = (props) => {
   const [visible, setVisible] = useState(false)
   const hideWhenVisible = { display: visible ? 'none' : '' }
@@ -9,13 +9,17 @@ const Toggleable = (props) => {
   useImperativeHandle(props.ref, () => {
     return { toggleVisibility }
   })
+
+  const clonedChildren = React.Children.map(props.children, (child) => {
+    return React.cloneElement(child, { toggleVisibility })
+  })
   return (
     <div>
       <div style={hideWhenVisible}>
         <button onClick={toggleVisibility}>{props.buttonLabel}</button>
       </div>
       <div style={showWhenVisible}>
-        {props.children}
+        {clonedChildren}
         <button onClick={toggleVisibility}>cancel</button>
       </div>
     </div>
