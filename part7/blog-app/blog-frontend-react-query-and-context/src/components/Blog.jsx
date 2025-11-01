@@ -1,7 +1,5 @@
 import { useState } from 'react'
 const Blog = ({ blog, handleLike, handleDelete }) => {
-  console.log(blog)
-
   const [detailsVisible, setDetailsVisible] = useState(false)
   const currentUser = JSON.parse(window.localStorage.getItem('loggedInUser'))
   const deleteButtonVisible =

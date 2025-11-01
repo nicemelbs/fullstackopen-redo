@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useContext } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -8,14 +8,15 @@ import CreateBlogForm from './components/CreateBlogForm'
 import Notification from './components/Notification'
 import Toggleable from './components/Togglelable'
 
+import NotificationContext from './NotificationContext'
+import { useQueryClient } from '@tanstack/react-query'
+
 const App = () => {
+  const queryClient = useQueryClient()
+  const { flashNotificationForDuration } = useContext(NotificationContext)
+
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-
-  const [notification, setNotification] = useState({
-    message: null,
-    type: null,
-  })
 
   useEffect(() => {
     blogService.getAll().then((blogs) => sortBlogsThenSet(blogs))
@@ -42,7 +43,7 @@ const App = () => {
       blogService.setToken(loggedIn.token)
       setUser(loggedIn)
     } catch (error) {
-      setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
+      // setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
     }
   }
 
@@ -59,8 +60,11 @@ const App = () => {
         blog.id === updatedBlog.id ? updatedBlog : blog
       )
       sortBlogsThenSet(changeBlogList)
+      flashNotificationForDuration(`You liked '${blog.title}'`)
     } catch (error) {
-      setNotificationAndClearAfterNSeconds(error.message, 'error')
+      // setNotificationAndClearAfterNSeconds(error.message, 'error')
+      const errorMessage = error.response?.data.errror ?? error.message
+      flashNotificationForDuration(errorMessage, false)
     }
   }
 
@@ -73,13 +77,13 @@ const App = () => {
       try {
         await blogService.deleteBlog(blog)
         const blogsWithoutTheDeleted = blogs.filter((b) => b.id !== blog.id)
-        setNotificationAndClearAfterNSeconds(
-          `${blog.title} successfully deleted.`,
-          'success'
-        )
+        // setNotificationAndClearAfterNSeconds(
+        //   `${blog.title} successfully deleted.`,
+        //   'success'
+        // )
         setBlogs(blogsWithoutTheDeleted)
       } catch (error) {
-        setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
+        // setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
       }
     }
   }
@@ -99,18 +103,11 @@ const App = () => {
     }
   }
 
-  const setNotificationAndClearAfterNSeconds = (message, type, n = 5) => {
-    setNotification({ message: message, type: type })
-    setTimeout(() => {
-      setNotification({ message: null })
-    }, n * 1000)
-  }
-
   const blogFormRef = useRef()
 
   return (
     <div>
-      <Notification notification={notification} />
+      <Notification />
       {!user && <LoginForm handleLogin={handleLogin} />}
 
       {user && (
