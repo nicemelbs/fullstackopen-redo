@@ -1,12 +1,34 @@
-import { useState } from 'react'
-const LoginForm = ({ handleLogin }) => {
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useContext, useState } from 'react'
+import loginService from '../services/login'
+import blogService from '../services/blogs'
+import NotificationContext from '../NotificationContext'
+const LoginForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const queryClient = useQueryClient()
+  const { flashNotificationForDuration } = useContext(NotificationContext)
+
   const login = (event) => {
     event.preventDefault()
-    handleLogin(username, password)
+    userMutation.mutate({ username, password })
   }
+
+  const userMutation = useMutation({
+    mutationFn: loginService.login,
+    onSuccess: (loggedIn) => {
+      window.localStorage.setItem('loggedInUser', JSON.stringify(loggedIn))
+      blogService.setToken(loggedIn.token)
+      queryClient.setQueryData(['user'], loggedIn)
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.error ?? error.message ?? 'Something went wrong.'
+      flashNotificationForDuration(errorMessage, false)
+    },
+  })
+
   return (
     <div>
       <h2>Log in</h2>

@@ -1,17 +1,40 @@
-import { useState } from 'react'
-const CreateBlogForm = ({ handleCreateBlog }) => {
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useContext } from 'react'
+import blogService from '../services/blogs'
+import NotificationContext from '../NotificationContext'
+const CreateBlogForm = () => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
 
+  const queryClient = useQueryClient()
+  const { flashNotificationForDuration } = useContext(NotificationContext)
   const createBlog = (event) => {
     event.preventDefault()
     const blogObject = { title, author, url }
-    handleCreateBlog(blogObject)
+    newBlogMutation.mutate(blogObject)
     setTitle('')
     setAuthor('')
     setUrl('')
   }
+
+  const newBlogMutation = useMutation({
+    mutationFn: blogService.create,
+    onSuccess: (newBlog) => {
+      const blogs = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(['blogs'], blogs.concat(newBlog))
+
+      flashNotificationForDuration(
+        `Blog '${newBlog.title}' by ${newBlog.author} posted!`
+      )
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.error ?? error.message ?? 'Something went wrong'
+
+      flashNotificationForDuration(errorMessage, false)
+    },
+  })
 
   return (
     <div>

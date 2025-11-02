@@ -1,118 +1,54 @@
-import { useState, useEffect, useRef, useContext } from 'react'
-import Blog from './components/Blog'
+import { useRef } from 'react'
 import blogService from './services/blogs'
-import loginService from './services/login'
 
 import LoginForm from './components/LoginForm'
 import CreateBlogForm from './components/CreateBlogForm'
 import Notification from './components/Notification'
 import Toggleable from './components/Togglelable'
 
-import NotificationContext from './NotificationContext'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import BlogsList from './components/BlogsList'
 
 const App = () => {
   const queryClient = useQueryClient()
-  const { flashNotificationForDuration } = useContext(NotificationContext)
+  const result = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 10,
+    retry: 1,
+  })
 
-  const [blogs, setBlogs] = useState([])
-  const [user, setUser] = useState(null)
-
-  useEffect(() => {
-    blogService.getAll().then((blogs) => sortBlogsThenSet(blogs))
-  }, [])
-
-  useEffect(() => {
-    const loggedInUser = JSON.parse(window.localStorage.getItem('loggedInUser'))
-    if (loggedInUser) {
-      blogService.setToken(loggedInUser.token)
-      setUser(loggedInUser)
-    }
-  }, [])
-
-  const sortBlogsThenSet = (blogs) => {
-    const sortedBlogs = blogs.toSorted((a, b) => b.likes - a.likes)
-
-    setBlogs(sortedBlogs)
+  const getUserFromLocalStorage = () => {
+    const storedUser = window.localStorage.getItem('loggedInUser')
+    if (!storedUser) return null
+    const parsedUser = JSON.parse(storedUser)
+    blogService.setToken(parsedUser.token)
+    return parsedUser
   }
-
-  const handleLogin = async (username, password) => {
-    try {
-      const loggedIn = await loginService.login({ username, password })
-      window.localStorage.setItem('loggedInUser', JSON.stringify(loggedIn))
-      blogService.setToken(loggedIn.token)
-      setUser(loggedIn)
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.error ?? error.message ?? 'Something went wrong.'
-      flashNotificationForDuration(errorMessage, false)
-    }
-  }
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: getUserFromLocalStorage,
+  })
 
   const handleLogout = () => {
     window.localStorage.removeItem('loggedInUser')
-    setUser(null)
     blogService.setToken(null)
-  }
-
-  const handleLike = async (blog) => {
-    try {
-      const updatedBlog = await blogService.incrementLikes(blog)
-      const changeBlogList = blogs.map((blog) =>
-        blog.id === updatedBlog.id ? updatedBlog : blog
-      )
-      sortBlogsThenSet(changeBlogList)
-      flashNotificationForDuration(`You liked '${blog.title}'`)
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.error ?? error.message ?? 'Something went wrong.'
-      flashNotificationForDuration(errorMessage, false)
-    }
-  }
-
-  const handleDelete = async (blog) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${blog.title} by ${blog.author}?`
-      )
-    ) {
-      try {
-        await blogService.deleteBlog(blog)
-        const blogsWithoutTheDeleted = blogs.filter((b) => b.id !== blog.id)
-        flashNotificationForDuration(`${blog.title} successfully deleted.`)
-        setBlogs(blogsWithoutTheDeleted)
-      } catch (error) {
-        const errorMessage =
-          error.response?.data.errror ??
-          error.message ??
-          'Something went wrong.'
-        flashNotificationForDuration(errorMessage, false)
-      }
-    }
-  }
-
-  const handleCreateBlog = async (blogObject) => {
-    try {
-      const newBlog = await blogService.create(blogObject)
-
-      sortBlogsThenSet(blogs.concat(newBlog))
-      flashNotificationForDuration(
-        `${newBlog.title} by ${newBlog.author} successfully posted!`
-      )
-      blogFormRef.current.toggleVisibility()
-    } catch (error) {
-      const errorMessage =
-        error.response?.data.errror ?? error.message ?? 'Something went wrong.'
-      flashNotificationForDuration(errorMessage, false)
-    }
+    queryClient.setQueryData(['user'], null)
   }
 
   const blogFormRef = useRef()
 
+  if (result.isLoading) {
+    return <div>loading data...</div>
+  } else if (result.isError) {
+    return <div>We are having server issues. Please try again later.</div>
+  }
+
   return (
     <div>
       <Notification />
-      {!user && <LoginForm handleLogin={handleLogin} />}
+      {!user && <LoginForm />}
 
       {user && (
         <div>
@@ -121,19 +57,9 @@ const App = () => {
             <button onClick={handleLogout}>logout</button>
           </div>
           <Toggleable buttonLabel="create new blog" ref={blogFormRef}>
-            <CreateBlogForm handleCreateBlog={handleCreateBlog} />
+            <CreateBlogForm />
           </Toggleable>
-          <h2>blogs</h2>
-          <ul>
-            {blogs.map((blog) => (
-              <Blog
-                key={blog.id}
-                blog={blog}
-                handleLike={handleLike}
-                handleDelete={handleDelete}
-              />
-            ))}
-          </ul>
+          <BlogsList />
         </div>
       )}
     </div>
