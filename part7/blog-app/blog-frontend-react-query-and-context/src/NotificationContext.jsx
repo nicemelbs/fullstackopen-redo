@@ -1,8 +1,6 @@
 import { createContext, useReducer } from 'react'
 
 const notificationReducer = (state, action) => {
-  console.log('action from notificationReducer:', action)
-
   switch (action.type) {
     case 'SET':
       return {

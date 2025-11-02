@@ -4,7 +4,6 @@ const Notification = () => {
   const { notification } = useContext(NotificationContext)
 
   if (!notification) return null
-  console.log('from Notification.jsx', notification)
 
   const { message, isSuccess } = notification ?? {
     message: null,
