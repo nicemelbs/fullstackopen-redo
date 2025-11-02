@@ -43,7 +43,9 @@ const App = () => {
       blogService.setToken(loggedIn.token)
       setUser(loggedIn)
     } catch (error) {
-      // setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
+      const errorMessage =
+        error.response?.data?.error ?? error.message ?? 'Something went wrong.'
+      flashNotificationForDuration(errorMessage, false)
     }
   }
 
@@ -62,8 +64,8 @@ const App = () => {
       sortBlogsThenSet(changeBlogList)
       flashNotificationForDuration(`You liked '${blog.title}'`)
     } catch (error) {
-      // setNotificationAndClearAfterNSeconds(error.message, 'error')
-      const errorMessage = error.response?.data.errror ?? error.message
+      const errorMessage =
+        error.response?.data?.error ?? error.message ?? 'Something went wrong.'
       flashNotificationForDuration(errorMessage, false)
     }
   }
@@ -77,13 +79,14 @@ const App = () => {
       try {
         await blogService.deleteBlog(blog)
         const blogsWithoutTheDeleted = blogs.filter((b) => b.id !== blog.id)
-        // setNotificationAndClearAfterNSeconds(
-        //   `${blog.title} successfully deleted.`,
-        //   'success'
-        // )
+        flashNotificationForDuration(`${blog.title} successfully deleted.`)
         setBlogs(blogsWithoutTheDeleted)
       } catch (error) {
-        // setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
+        const errorMessage =
+          error.response?.data.errror ??
+          error.message ??
+          'Something went wrong.'
+        flashNotificationForDuration(errorMessage, false)
       }
     }
   }
@@ -93,13 +96,14 @@ const App = () => {
       const newBlog = await blogService.create(blogObject)
 
       sortBlogsThenSet(blogs.concat(newBlog))
-      setNotificationAndClearAfterNSeconds(
-        `${newBlog.title} by ${newBlog.author} successfully posted!`,
-        'success'
+      flashNotificationForDuration(
+        `${newBlog.title} by ${newBlog.author} successfully posted!`
       )
       blogFormRef.current.toggleVisibility()
     } catch (error) {
-      setNotificationAndClearAfterNSeconds(error.response.data.error, 'error')
+      const errorMessage =
+        error.response?.data.errror ?? error.message ?? 'Something went wrong.'
+      flashNotificationForDuration(errorMessage, false)
     }
   }
 
