@@ -1,15 +1,24 @@
 import { useQueryClient, useMutation } from '@tanstack/react-query'
-import { useState, useContext } from 'react'
+import { useContext } from 'react'
+import { useMatch, useNavigate } from 'react-router-dom'
 import NotificationContext from '../NotificationContext'
 import blogService from '../services/blogs'
+import { Link } from 'react-router-dom'
+import CommentsSection from '../components/CommentsSection'
 
-const Blog = ({ blog }) => {
-  const [detailsVisible, setDetailsVisible] = useState(false)
+const Blog = () => {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const allBlogs = queryClient.getQueryData(['blogs'])
+  const blogMatch = useMatch('/blogs/:id')
+  const blog = blogMatch
+    ? allBlogs.find((b) => b.id === blogMatch.params.id)
+    : null
+
   const currentUser = JSON.parse(window.localStorage.getItem('loggedInUser'))
   const deleteButtonVisible =
-    currentUser && currentUser.username === blog.user.username
+    currentUser && currentUser.username === blog?.user.username
 
-  const queryClient = useQueryClient()
   const { flashNotificationForDuration } = useContext(NotificationContext)
 
   const updateBlogMutation = useMutation({
@@ -42,6 +51,7 @@ const Blog = ({ blog }) => {
         blogs.filter((b) => b.id !== deletedId)
       )
       flashNotificationForDuration('Blog deleted successfully.')
+      queryClient.invalidateQueries(['users'])
     },
     onError: (error) => {
       const errorMessage =
@@ -60,36 +70,32 @@ const Blog = ({ blog }) => {
         `Are you sure you want to delete '${blog.title}' by ${blog.author}?`
       )
     ) {
-      console.log('handleDelete', blog)
-
       deleteBlogMutation.mutate(blog)
+
+      navigate('/')
     }
   }
 
+  if (!blog) return null
   return (
-    <li className="blog">
-      <span className="blog-title">{blog.title}</span> by{' '}
-      <span className="blog-author">{blog.author}</span>
-      <button onClick={() => setDetailsVisible(!detailsVisible)}>
-        {detailsVisible ? 'hide' : 'view'}
-      </button>
-      {detailsVisible && (
-        <div>
-          <a className="blog-url" target="_blank" href={blog.url}>
-            {blog.url}
-          </a>
-          <br />
-          <span className="blog-likes">likes {blog.likes}</span>
-          <button onClick={handleLike}>like</button>
-          <br />
-          {blog.user.name}
-          <br />
-          {deleteButtonVisible && (
-            <button onClick={handleDelete}>delete</button>
-          )}
-        </div>
-      )}
-    </li>
+    <div className="blog">
+      <h2>
+        {blog.title} by {blog.author}
+      </h2>
+      <div>
+        <a className="blog-url" target="_blank" href={blog.url}>
+          {blog.url}
+        </a>
+        <br />
+        <span className="blog-likes">likes {blog.likes}</span>
+        <button onClick={handleLike}>like</button>
+        <br />
+        Added by <Link to={`/users/${blog.user.id}`}>{blog.user.name}</Link>
+        <br />
+        {deleteButtonVisible && <button onClick={handleDelete}>delete</button>}
+        <CommentsSection />
+      </div>
+    </div>
   )
 }
 

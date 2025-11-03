@@ -3,6 +3,7 @@ import { useContext, useState } from 'react'
 import loginService from '../services/login'
 import blogService from '../services/blogs'
 import NotificationContext from '../NotificationContext'
+import { useNavigate } from 'react-router-dom'
 const LoginForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -10,9 +11,11 @@ const LoginForm = () => {
   const queryClient = useQueryClient()
   const { flashNotificationForDuration } = useContext(NotificationContext)
 
+  const navigate = useNavigate()
   const login = (event) => {
     event.preventDefault()
     userMutation.mutate({ username, password })
+    navigate('/')
   }
 
   const userMutation = useMutation({

@@ -1,1 +1,4 @@
 I am not aware if the bloglist app will be edited in future exercises beyond part 7. This part is only for part 7f, exerices 7.10-7.21. The backend and frontend folders are copied from their state before I arrived in this part.
+
+Exercises 7.14 and beyond are done in the React Query and Context frontend
+part4\blog-backend is also modified to allow for the requirements of these exercises

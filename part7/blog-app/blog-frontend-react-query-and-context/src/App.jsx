@@ -1,24 +1,18 @@
-import { useRef } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import blogService from './services/blogs'
+import usersService from './services/users'
 
 import LoginForm from './components/LoginForm'
-import CreateBlogForm from './components/CreateBlogForm'
 import Notification from './components/Notification'
-import Toggleable from './components/Togglelable'
+import Users from './components/Users'
+import User from './components/User'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import BlogsList from './components/BlogsList'
+import Menu from './components/Menu'
+import Blog from './components/Blog'
 
 const App = () => {
-  const queryClient = useQueryClient()
-  const result = useQuery({
-    queryKey: ['blogs'],
-    queryFn: blogService.getAll,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 10,
-    retry: 1,
-  })
-
   const getUserFromLocalStorage = () => {
     const storedUser = window.localStorage.getItem('loggedInUser')
     if (!storedUser) return null
@@ -31,35 +25,34 @@ const App = () => {
     queryFn: getUserFromLocalStorage,
   })
 
-  const handleLogout = () => {
-    window.localStorage.removeItem('loggedInUser')
-    blogService.setToken(null)
-    queryClient.setQueryData(['user'], null)
-  }
+  const result = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+    refetchOnWindowFocus: false,
+  })
 
-  const blogFormRef = useRef()
+  useQuery({
+    queryKey: ['users'],
+    queryFn: usersService.getAll,
+    refetchOnWindowFocus: false,
+  })
 
-  if (result.isLoading) {
-    return <div>loading data...</div>
-  } else if (result.isError) {
-    return <div>We are having server issues. Please try again later.</div>
-  }
-
+  if (result.isLoading) return <div>Fetching data</div>
+  if (result.isError) return <div>Something went wrong</div>
   return (
     <div>
       <Notification />
       {!user && <LoginForm />}
-
       {user && (
         <div>
-          <div>
-            Welcome back, {user.name}{' '}
-            <button onClick={handleLogout}>logout</button>
-          </div>
-          <Toggleable buttonLabel="create new blog" ref={blogFormRef}>
-            <CreateBlogForm />
-          </Toggleable>
-          <BlogsList />
+          <Menu />
+
+          <Routes>
+            <Route path="/" element={<BlogsList />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/users/:id" element={<User />} />
+            <Route path="/blogs/:id" element={<Blog />} />
+          </Routes>
         </div>
       )}
     </div>

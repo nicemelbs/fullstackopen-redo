@@ -27,6 +27,8 @@ const CreateBlogForm = () => {
       flashNotificationForDuration(
         `Blog '${newBlog.title}' by ${newBlog.author} posted!`
       )
+
+      queryClient.invalidateQueries(['users'])
     },
     onError: (error) => {
       const errorMessage =
