@@ -1,5 +1,6 @@
 import NotificationContext from '../NotificationContext'
 import { useContext } from 'react'
+import { Alert } from 'react-bootstrap'
 const Notification = () => {
   const { notification } = useContext(NotificationContext)
 
@@ -9,17 +10,7 @@ const Notification = () => {
     message: null,
   }
 
-  const style = {
-    border: 'solid',
-    padding: 10,
-    borderWidth: 1,
-    borderThickness: 3,
-    marginBottom: 10,
-    display: isSuccess === '' ? 'none' : 'block',
-    color: isSuccess ? 'green' : 'red',
-  }
-
-  return <div style={style}>{message}</div>
+  return <Alert variant={isSuccess ? 'success' : 'danger'}>{message}</Alert>
 }
 
 export default Notification

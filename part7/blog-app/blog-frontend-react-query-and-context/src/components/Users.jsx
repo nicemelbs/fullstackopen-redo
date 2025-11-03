@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { Table } from 'react-bootstrap'
 const Users = () => {
   const queryClient = useQueryClient()
   const users = queryClient.getQueryData(['users'])
@@ -8,7 +9,7 @@ const Users = () => {
   return (
     <div>
       <h2>Users</h2>
-      <table>
+      <Table striped>
         <thead>
           <tr>
             <th>name</th>
@@ -25,7 +26,7 @@ const Users = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   )
 }

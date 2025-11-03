@@ -6,6 +6,8 @@ import blogService from '../services/blogs'
 import { Link } from 'react-router-dom'
 import CommentsSection from '../components/CommentsSection'
 
+import { Button } from 'react-bootstrap'
+
 const Blog = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -78,7 +80,7 @@ const Blog = () => {
 
   if (!blog) return null
   return (
-    <div className="blog">
+    <div className="container">
       <h2>
         {blog.title} by {blog.author}
       </h2>
@@ -88,11 +90,17 @@ const Blog = () => {
         </a>
         <br />
         <span className="blog-likes">likes {blog.likes}</span>
-        <button onClick={handleLike}>like</button>
+        <Button variant="outline-primary" onClick={handleLike}>
+          like
+        </Button>
         <br />
         Added by <Link to={`/users/${blog.user.id}`}>{blog.user.name}</Link>
         <br />
-        {deleteButtonVisible && <button onClick={handleDelete}>delete</button>}
+        {deleteButtonVisible && (
+          <Button variant="outline-danger" onClick={handleDelete}>
+            delete this blog
+          </Button>
+        )}
         <CommentsSection />
       </div>
     </div>

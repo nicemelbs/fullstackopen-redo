@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import blogService from '../services/blogs'
+import { Navbar, Nav, Button } from 'react-bootstrap'
 
 const Menu = () => {
   const handleLogout = () => {
@@ -13,11 +14,29 @@ const Menu = () => {
   const user = queryClient.getQueryData(['user'])
 
   return (
-    <div>
-      <Link to="/">blogs</Link>
-      <Link to="/users">users</Link>
-      {user.name} logged in. <button onClick={handleLogout}>logout</button>
-    </div>
+    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+      <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+      <Navbar.Collapse id="responsive-navbar-nav">
+        <Nav className="me-auto">
+          <Nav.Link href="#" as="span">
+            <Link to="/">home</Link>
+          </Nav.Link>
+          <Nav.Link href="#" as="span">
+            <Link to="/users">users</Link>
+          </Nav.Link>
+          <Nav.Link href="#" as="span">
+            {user.name} logged in.
+            <Button
+              className="btn-sm"
+              variant="outline-secondary"
+              onClick={handleLogout}
+            >
+              logout
+            </Button>
+          </Nav.Link>
+        </Nav>
+      </Navbar.Collapse>
+    </Navbar>
   )
 }
 

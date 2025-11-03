@@ -3,6 +3,7 @@ import { useMatch } from 'react-router-dom'
 import NotificationContext from '../NotificationContext'
 import blogService from '../services/blogs'
 import { useContext, useRef } from 'react'
+import { Form, Button, ListGroup, ListGroupItem } from 'react-bootstrap'
 const CommentsSection = () => {
   const queryClient = useQueryClient()
   const blogMatch = useMatch('/blogs/:id')
@@ -29,26 +30,40 @@ const CommentsSection = () => {
     event.preventDefault()
     const comment = commentRef.current.value
 
+    console.log('comment?', comment)
+
     blogMutation.mutate({ id: blog.id, comment })
     commentRef.current.value = ''
   }
 
   const commentRef = useRef()
   return (
-    <div>
+    <div className="container mt-3 mb-3">
       <h3>comments</h3>
-      <form onSubmit={handleCommentSubmit}>
-        <input ref={commentRef} type="text" placeholder="Add a comment" />
-        <button type="submit">submit</button>
-      </form>
+      <Form onSubmit={handleCommentSubmit}>
+        <Form.Control
+          ref={commentRef}
+          type="text"
+          placeholder="Add a comment"
+        />
+        <Button
+          variant="primary"
+          type="submit"
+          className="btn-sm ms-auto d-block"
+        >
+          submit
+        </Button>
+      </Form>
       {comments.length > 0 && (
-        <ul>
+        <ListGroup className="container mt-3 mb-3">
           {comments.map((comment, i) => (
-            <li key={i}>{comment}</li>
+            <ListGroupItem key={i}>{comment}</ListGroupItem>
           ))}
-        </ul>
+        </ListGroup>
       )}
-      {comments.length === 0 && <div>No comments yet. Add the first!</div>}
+      {comments.length === 0 && (
+        <div className="container">No comments yet. Add the first!</div>
+      )}
     </div>
   )
 }

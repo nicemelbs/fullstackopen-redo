@@ -40,7 +40,7 @@ const App = () => {
   if (result.isLoading) return <div>Fetching data</div>
   if (result.isError) return <div>Something went wrong</div>
   return (
-    <div>
+    <div className="container">
       <Notification />
       {!user && <LoginForm />}
       {user && (

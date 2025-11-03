@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import CreateBlogForm from './CreateBlogForm'
 import Toggleable from './Togglelable'
+import { Table } from 'react-bootstrap'
 
 import { useRef } from 'react'
 
@@ -20,14 +21,20 @@ const BlogsList = () => {
       <br />
       <br />
       <br />
-      {blogsSorted.map((blog) => {
-        return (
-          <div className="blog" key={blog.id}>
-            <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
-            <span> by {blog.author}</span>
-          </div>
-        )
-      })}
+      <Table striped>
+        <tbody>
+          {blogsSorted.map((blog) => {
+            return (
+              <tr key={blog.id}>
+                <td>
+                  <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+                </td>
+                <td>{blog.author}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </Table>
     </div>
   )
 }
