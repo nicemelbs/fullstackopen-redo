@@ -1,13 +1,22 @@
 import { useMutation } from '@apollo/client/react'
 import { useState } from 'react'
 import { ALL_AUTHORS, EDIT_AUTHOR } from '../queries'
-const AuthorForm = ({ authors }) => {
+const AuthorForm = ({ authors, notify }) => {
   const [born, setBorn] = useState('')
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }],
+    update: (cache, response) => {
+      cache.updateQuery({ query: ALL_AUTHORS }, ({ allAuthors }) => {
+        const returnedAuthor = response.data.editAuthor
+        return {
+          allAuthors: allAuthors.map((author) =>
+            author.id === returnedAuthor.id ? returnedAuthor : author
+          ),
+        }
+      })
+    },
     onError: (error) => {
-      console.error(error)
+      notify(error)
     },
   })
 

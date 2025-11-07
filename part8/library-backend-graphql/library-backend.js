@@ -151,6 +151,7 @@ const typeDefs = `
     allAuthors: [Author!]!
     allBooks(author: String, genre: String): [Book!]
     me: User!
+    allGenres: [String!]!
   }
 
   type Mutation {
@@ -209,6 +210,15 @@ const resolvers = {
       }
       return currentUser
     },
+    allGenres: async () => {
+      const allBooks = await Book.find({})
+      const allGenres = allBooks.reduce(
+        (acc, book) => acc.concat(book.genres),
+        []
+      )
+
+      return [...new Set(allGenres)].toSorted()
+    },
   },
 
   Author: {
@@ -247,7 +257,7 @@ const resolvers = {
           {
             extensions: {
               code: 'GRAPHQL_VALIDATION_FAILED',
-              invalidArgs: args.title,
+              invalidArgs: title,
             },
           }
         )
@@ -259,7 +269,7 @@ const resolvers = {
           {
             extensions: {
               code: 'GRAPHQL_VALIDATION_FAILED',
-              invalidArgs: args.title,
+              invalidArgs: author,
             },
           }
         )
@@ -287,7 +297,7 @@ const resolvers = {
       if (!currentUser) {
         throw new GraphQLError('Forbidden. You must be logged in to do that.', {
           extensions: {
-            code: 'BAD_USER_INPUT',
+            code: 'FORBIDDEN',
           },
         })
       }

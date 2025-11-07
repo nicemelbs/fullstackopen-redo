@@ -29,7 +29,9 @@ const Authors = (props) => {
         </tbody>
       </table>
 
-      <AuthorForm authors={authors} />
+      {props.loggedInUser && (
+        <AuthorForm authors={authors} notify={props.notify} />
+      )}
     </div>
   )
 }
