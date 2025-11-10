@@ -5,42 +5,80 @@ import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 
 import { useState, useEffect } from 'react'
-import { useQuery } from '@apollo/client/react'
-import { ME } from './queries'
+import { useQuery, useSubscription } from '@apollo/client/react'
+import { BOOK_ADDED, ME, ALL_BOOKS, ALL_GENRES, ALL_AUTHORS } from './queries'
 import Recommended from './components/Recommended'
+
+export const updateBookAndGenreCache = (cache, addedBook) => {
+  const newGenres = addedBook.genres
+  const authorOfNewBook = addedBook.author
+
+  const uniqueBy = (array, key) => {
+    return Array.from(new Map(array.map((item) => [item[key], item])).values())
+  }
+
+  cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => {
+    return { allBooks: uniqueBy(allBooks.concat(addedBook), 'title') }
+  })
+
+  cache.updateQuery({ query: ALL_GENRES }, ({ allGenres }) => {
+    return { allGenres: [...new Set(allGenres.concat(newGenres))].toSorted() }
+  })
+
+  cache.updateQuery({ query: ALL_AUTHORS }, ({ allAuthors }) => {
+    return { allAuthors: uniqueBy(allAuthors.concat(authorOfNewBook), 'name') }
+  })
+}
 
 const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
   const [loggedInUser, setLoggedInUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState('')
-
+  const [notificationMessage, setNotificationMessage] = useState({
+    message: '',
+    isError: false,
+  })
   const user = useQuery(ME)
 
   useEffect(() => {
-    if (user.data) setLoggedInUser(user.data.me)
+    user.refetch()
+    if (user.data && token) setLoggedInUser(user.data.me)
     else setLoggedInUser(null)
   }, [token, user.data])
 
   const handleLogout = () => {
-    setToken(null)
+    setPage('authors')
+    localStorage.removeItem('library-user-token')
     setLoggedInUser(null)
-    window.localStorage.removeItem('library-user-token')
+    setToken(null)
   }
 
-  const notify = (error) => {
-    const errorMessages =
-      typeof error === 'string'
-        ? error
-        : error.errors?.map((e) => e.message).join('\n') ??
-          'Something went wrong'
-    console.error(errorMessages)
-    setErrorMessage(errorMessages)
+  const notify = (messageObject, isError = true) => {
+    const message =
+      typeof messageObject === 'string'
+        ? messageObject
+        : messageObject.errors?.map((m) => m.message).join('\n') ??
+          (isError
+            ? 'Something went wrong'
+            : 'Something happened. Not an error.')
+
+    if (isError) console.error(message)
+    else console.log(message)
+    setNotificationMessage({ message, isError })
 
     setTimeout(() => {
-      setErrorMessage('')
+      setNotificationMessage('')
     }, 5000)
   }
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      const addedBook = data.data.bookAdded
+      notify(`${addedBook.title} added`, false)
+
+      updateBookAndGenreCache(client.cache, addedBook)
+    },
+  })
 
   return (
     <div>
@@ -61,7 +99,7 @@ const App = () => {
         {loggedInUser && <button onClick={handleLogout}>logout</button>}
       </div>
 
-      <Notification message={errorMessage} />
+      <Notification notificationMessage={notificationMessage} />
       <Authors
         show={page === 'authors'}
         loggedInUser={loggedInUser}

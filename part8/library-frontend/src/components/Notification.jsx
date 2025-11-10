@@ -1,9 +1,11 @@
-const Notification = ({ message }) => {
+const Notification = ({ notificationMessage }) => {
+  const { message, isError } = notificationMessage
   if (!message) return null
 
   const styles = {
-    color: 'red',
-    border: '2px solid red',
+    color: isError ? 'red' : 'green',
+    border: '2px solid',
+    borderColor: isError ? 'red' : 'green',
     fontWeight: 'bold',
   }
 

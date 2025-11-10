@@ -10,30 +10,25 @@ const LoginForm = (props) => {
   const setToken = props.setToken
   const setPage = props.setPage
 
-  const [login, result] = useMutation(LOGIN, {
+  const [login] = useMutation(LOGIN, {
     onError: (error) => {
       notify(error)
     },
-    onCompleted: () => {
+    onCompleted: (data) => {
+      const token = data.login.value
+      setToken(token)
+      localStorage.setItem('library-user-token', token)
+      setUsername('')
+      setPassword('')
       setPage('authors')
     },
   })
-
-  useEffect(() => {
-    if (result.data) {
-      const token = result.data.login.value
-      console.log('result.data:', result.data)
-      setToken(token)
-      localStorage.setItem('library-user-token', token)
-    }
-  }, [result.data])
 
   if (!props.show) {
     return null
   }
   const handleLogin = (event) => {
     event.preventDefault()
-    console.log('logging in with ', { username, password })
     login({ variables: { username, password } })
   }
 
