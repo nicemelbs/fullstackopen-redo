@@ -1,59 +1,62 @@
-import { isNotNumber } from './utils'
+import { isNotNumber } from './utils';
 
 interface Result {
-  periodLength: number
-  trainingDays: number
-  success: boolean
-  rating: number
-  ratingDescription: string
-  target: number
-  average: number
+  periodLength: number;
+  trainingDays: number;
+  success: boolean;
+  rating: number;
+  ratingDescription: string;
+  target: number;
+  average: number;
 }
 
-interface Inputs {
-  target: number
-  hours: number[]
+interface ValidatedInputs {
+  target: number;
+  daily_exercises: number[];
 }
 
-const validateInputs = (args: string[]): Inputs => {
-  if (args.length < 4) {
-    throw new Error('Error: Too few arguments')
+export const validateInputs = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  targetInput: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  daily_exercisesInput: any[]
+): ValidatedInputs => {
+  if (isNotNumber(targetInput)) {
+    throw new Error('malformatted parameters');
   }
 
-  let target = 0
-  let hours = []
-  args.slice(2).forEach((arg, i) => {
-    if (isNotNumber(arg)) {
-      throw new Error('Error: Invalid input. Expecting number.')
+  const target = Number(targetInput);
+  const hours: number[] = [];
+  daily_exercisesInput.forEach((i) => {
+    if (isNotNumber(Number(i))) {
+      throw new Error('malformatted parameters');
     }
+    hours.push(Number(i));
+  });
 
-    if (i === 0) {
-      target = Number(arg)
-    } else {
-      hours.push(Number(arg))
-    }
-  })
+  return { target, daily_exercises: hours };
+};
 
-  return { target, hours }
-}
-
-const calculateExercises = (args: string[]): Result => {
-  const validatedInputs = validateInputs(args)
-  const target = validatedInputs.target
-  const input = validatedInputs.hours
-
+export const calculateExercises = (
+  target: number,
+  daily_exercises: number[]
+): Result => {
   const description = [
     'you have a lot of work to do, buddy',
     'not too bad but could be better',
     'awesome',
-  ]
+  ];
 
-  const periodLength = input.length
-  const trainingDays = input.reduce((acc, curr) => (acc += curr > 0 ? 1 : 0), 0)
-  const average = input.reduce((acc, curr) => acc + curr) / periodLength
-  const success = average >= target
-  const rating = calculateRating(average, target)
-  const ratingDescription = description[rating - 1]
+  const periodLength = daily_exercises.length;
+  const trainingDays = daily_exercises.reduce(
+    (acc, curr) => (acc += curr > 0 ? 1 : 0),
+    0
+  );
+  const average =
+    daily_exercises.reduce((acc, curr) => acc + curr) / periodLength;
+  const success = average >= target;
+  const rating = calculateRating(average, target);
+  const ratingDescription = description[rating - 1];
 
   return {
     periodLength,
@@ -63,22 +66,39 @@ const calculateExercises = (args: string[]): Result => {
     ratingDescription,
     target,
     average,
-  }
-}
+  };
+};
 
 const calculateRating = (average: number, target: number): number => {
-  const diff = average - target
-  if (diff > 0) return 3
-  if (diff < 0.5) return 2
-  return 1
-}
+  const diff = target - average;
+  if (diff < 0) return 3;
+  if (diff < 0.5) return 2;
+  return 1;
+};
 
-try {
-  console.log(calculateExercises(process.argv))
-} catch (error: unknown) {
-  let message = 'Something went wrong: '
-  if (error instanceof Error) {
-    message += error.message
+if (require.main === module) {
+  try {
+    if (process.argv.length < 4) {
+      throw new Error('Error: Too few arguments');
+    }
+    const targetInput = process.argv[2];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hoursInput: any[] = [];
+    process.argv.slice(2).forEach((arg) => {
+      if (isNotNumber(arg)) {
+        throw new Error('Invalid input. Expecting number.');
+      }
+      hoursInput.push(arg);
+    });
+
+    const { target, daily_exercises } = validateInputs(targetInput, hoursInput);
+
+    console.log(calculateExercises(target, daily_exercises));
+  } catch (error: unknown) {
+    let message = 'Something went wrong: ';
+    if (error instanceof Error) {
+      message += error.message;
+    }
+    console.error(message);
   }
-  console.error(message)
 }

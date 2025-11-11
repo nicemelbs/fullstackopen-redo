@@ -1,3 +1,3 @@
-export const isNotNumber = (argument: any): boolean => isNaN(Number(argument))
+export const isNotNumber = (argument: any): boolean => isNaN(Number(argument));
 
-export default "Utils default"
+export default 'Utils default';
