@@ -1,6 +1,6 @@
 import express from 'express';
 import { Response } from 'express';
-import { DiagnosisEntry } from '../../types';
+import { DiagnosisEntry } from '../types';
 import diagnosesService from '../services/diagnosesService';
 
 const router = express.Router();
