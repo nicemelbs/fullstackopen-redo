@@ -1,5 +1,6 @@
 import {
   NewPatientEntry,
+  Patient,
   PatientEntry,
   PatientEntryWithoutSsn,
 } from '../types';
@@ -20,6 +21,7 @@ const addPatient = (patient: NewPatientEntry): PatientEntry => {
   const id = v4();
   const newPatientEntry = {
     id,
+    entries: [],
     ...patient,
   };
 
@@ -27,7 +29,26 @@ const addPatient = (patient: NewPatientEntry): PatientEntry => {
   return newPatientEntry;
 };
 
+const getOneById = (id: string): Patient | undefined => {
+  const foundPatient = patients.find((p) => p.id === id);
+  foundPatient?.entries.forEach((e) => {
+    switch (e.type) {
+      case 'HealthCheck':
+        break;
+      case 'Hospital':
+        break;
+      case 'OccupationalHealthcare':
+        break;
+      default:
+        throw new Error('unknown type');
+    }
+  });
+
+  return foundPatient;
+};
+
 export default {
   getPatients,
   addPatient,
+  getOneById,
 };

@@ -4,7 +4,7 @@ import patientsRouter from './src/routes/patients';
 const app = express();
 app.use(express.json());
 
-app.get('/ping', (_req, res) => {
+app.get('/api/ping', (_req, res) => {
   return res.send('pong');
 });
 

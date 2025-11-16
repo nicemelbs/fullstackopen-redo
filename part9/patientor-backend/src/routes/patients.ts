@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import {
   NewPatientEntry,
+  Patient,
   PatientEntry,
   PatientEntryWithoutSsn,
 } from '../types';
@@ -12,6 +13,15 @@ const router = express.Router();
 
 router.get('/', (_req, res: Response<PatientEntryWithoutSsn[]>) => {
   res.send(patientsService.getPatients());
+});
+
+router.get('/:id', (req: Request, res: Response<Patient>) => {
+  const id = req.params.id;
+  const patient = patientsService.getOneById(id);
+
+  if (patient) {
+    res.send(patient);
+  } else res.status(404).send(undefined);
 });
 
 const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
@@ -45,5 +55,6 @@ router.post(
     res.json(addedPatient);
   }
 );
+
 router.use(errorMiddleware);
 export default router;
