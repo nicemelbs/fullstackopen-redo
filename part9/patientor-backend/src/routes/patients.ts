@@ -1,12 +1,13 @@
 import express, { NextFunction, Request, Response } from 'express';
 import {
+  NewEntry,
   NewPatientEntry,
   Patient,
   PatientEntry,
   PatientEntryWithoutSsn,
 } from '../types';
 import patientsService from '../services/patientsService';
-import { NewPatientSchema } from '../utils';
+import { NewEntrySchema, NewPatientSchema } from '../utils';
 import z from 'zod';
 
 const router = express.Router();
@@ -53,6 +54,34 @@ router.post(
   ) => {
     const addedPatient = patientsService.addPatient(req.body);
     res.json(addedPatient);
+  }
+);
+const newEntryParser = (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    NewEntrySchema.parse(req.body);
+    next();
+  } catch (error: unknown) {
+    next(error);
+  }
+};
+
+router.post(
+  '/:id/entries',
+  newEntryParser,
+  (
+    req: Request<{ id: string }, unknown, NewEntry>,
+    res: Response<Patient | undefined>
+  ) => {
+    const patientId = req.params.id;
+
+    const entryToAdd = req.body;
+
+    const udpatedPatient = patientsService.addEntryToPatient(
+      patientId,
+      entryToAdd
+    );
+
+    res.status(201).send(udpatedPatient);
   }
 );
 

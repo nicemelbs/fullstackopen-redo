@@ -1,5 +1,11 @@
 import z from 'zod';
-import { NewPatientSchema } from './utils';
+import {
+  NewEntrySchema,
+  NewHealthCheckEntrySchema,
+  NewHospitalEntrySchema,
+  NewOccupationalHealthcareEntrySchema,
+  NewPatientSchema,
+} from './utils';
 
 export interface DiagnosisEntry {
   code: string;
@@ -19,9 +25,16 @@ export interface PatientEntry extends NewPatientEntry {
 }
 export type PatientEntryWithoutSsn = Omit<PatientEntry, 'ssn'>;
 
+export enum EntryType {
+  HealthCheck = 'HealthCheck',
+  OccupationalHealthcare = 'OccupationalHealthcare',
+  Hospital = 'Hospital',
+}
+
 interface BaseEntry {
   id: string;
   description: string;
+  type: EntryType;
   date: string;
   specialist: string;
   diagnosisCodes?: Array<DiagnosisEntry['code']>;
@@ -35,21 +48,17 @@ export enum HealthCheckRating {
 }
 
 interface HealthCheckEntry extends BaseEntry {
-  type: 'HealthCheck';
+  type: EntryType.HealthCheck;
   healthCheckRating: HealthCheckRating;
 }
 
-interface Healthcare extends BaseEntry {
-  description: string;
-}
-
-interface OccupationalHealthcareEntry extends Healthcare {
-  type: 'OccupationalHealthcare';
+interface OccupationalHealthcareEntry extends BaseEntry {
+  type: EntryType.OccupationalHealthcare;
   employerName?: string;
   sickLeave?: { startDate: string; endDate: string };
 }
-interface HospitalEntry extends Healthcare {
-  type: 'Hospital';
+interface HospitalEntry extends BaseEntry {
+  type: EntryType.Hospital;
   discharge: {
     date: string;
     criteria: string;
@@ -60,6 +69,8 @@ export type Entry =
   | HospitalEntry
   | OccupationalHealthcareEntry
   | HealthCheckEntry;
+
+export type NewEntry = z.infer<typeof NewEntrySchema>;
 
 export interface Patient {
   id: string;
@@ -79,3 +90,8 @@ export interface Patient {
 // type EntryWithoutId = UnionOmit<Entry, 'id'>;
 
 export type NonSensitivePatient = Omit<Patient, 'ssn' | 'entries'>;
+export type NewHospitalEntry = z.infer<typeof NewHospitalEntrySchema>;
+export type NewOccupationalHealthcareEntry = z.infer<
+  typeof NewOccupationalHealthcareEntrySchema
+>;
+export type NewHealthCheckEntry = z.infer<typeof NewHealthCheckEntrySchema>;
