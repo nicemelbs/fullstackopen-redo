@@ -6,6 +6,7 @@ import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EntriesList from '../EntriesList';
+import { Container, Divider, Typography } from '@mui/material';
 const PatientInfo = () => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const match = useMatch('patients/:id');
@@ -15,6 +16,7 @@ const PatientInfo = () => {
       const fetchPatient = async () => {
         if (match.params.id) {
           const p = await patients.getOneById(match.params.id);
+
           setPatient(p);
         }
       };
@@ -42,14 +44,15 @@ const PatientInfo = () => {
     return <div>No matching entry.</div>;
   }
   return (
-    <div>
-      <h2>
+    <Container style={{ marginTop: '0.5em' }}>
+      <Divider hidden />
+      <Typography variant="h4">
         {patient.name} <span>{getGenderIcon(patient.gender)}</span>
-      </h2>
-      <div>ssn: {patient.ssn}</div>
-      <div>occupation: {patient.occupation}</div>
+      </Typography>
+      <Typography>ssn: {patient.ssn}</Typography>
+      <Typography>occupation: {patient.occupation}</Typography>
       <EntriesList entries={patient.entries} />
-    </div>
+    </Container>
   );
 };
 

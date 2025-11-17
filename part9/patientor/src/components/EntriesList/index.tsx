@@ -1,17 +1,20 @@
+import { Container, Typography } from '@mui/material';
 import { Entry } from '../../types';
-import EntryInformation from './EntriesInformation';
+import EntryInformation from './EntryInformation';
 
 interface Props {
   entries: Entry[];
 }
 const EntriesList = (props: Props) => {
   return (
-    <div>
-      <h3>entries</h3>
+    <Container>
+      <Typography variant="h5" marginTop={'0.5em'}>
+        entries
+      </Typography>
       {props.entries.map((entry) => (
         <EntryInformation key={entry.id} entry={entry} />
       ))}
-    </div>
+    </Container>
   );
 };
 
