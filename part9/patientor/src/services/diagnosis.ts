@@ -18,4 +18,10 @@ const getMany = async (codes: string[]): Promise<Diagnosis[]> => {
   return response.data;
 };
 
-export default { getOneByCode, getMany };
+const getAll = async (): Promise<Diagnosis[]> => {
+  const response = await axios.get<Diagnosis[]>(`${apiBaseUrl}/diagnoses`);
+
+  return response.data;
+};
+
+export default { getOneByCode, getMany, getAll };

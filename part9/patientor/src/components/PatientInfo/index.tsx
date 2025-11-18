@@ -6,10 +6,13 @@ import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EntriesList from '../EntriesList';
-import { Container, Divider, Typography } from '@mui/material';
+import { Button, Container, Divider, Typography } from '@mui/material';
+import AddEntryForm from './AddEntryForm';
 const PatientInfo = () => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const match = useMatch('patients/:id');
+
+  const [formVisible, setFormVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (match) {
@@ -49,6 +52,19 @@ const PatientInfo = () => {
       <Typography variant="h4">
         {patient.name} <span>{getGenderIcon(patient.gender)}</span>
       </Typography>
+
+      {!formVisible && (
+        <Button variant="contained" onClick={() => setFormVisible(true)}>
+          Add new entry
+        </Button>
+      )}
+
+      {formVisible && (
+        <Button onClick={() => setFormVisible(false)} variant="contained">
+          Cancel
+        </Button>
+      )}
+      <AddEntryForm isVisible={formVisible} />
       <Typography>ssn: {patient.ssn}</Typography>
       <Typography>occupation: {patient.occupation}</Typography>
       <EntriesList entries={patient.entries} />
