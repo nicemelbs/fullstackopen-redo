@@ -1,7 +1,7 @@
 import { FormControl, TextField } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useContext, useEffect } from 'react';
 import { FormContext } from './FormContextProvider';
 
@@ -21,7 +21,7 @@ const HospitalForm = () => {
         <FormControl style={{ marginTop: 20 }}>
           <DatePicker
             label="Discharge date"
-            value={formData['dischargeDate'] as Dayjs}
+            value={formData['dischargeDate'] ?? dayjs()}
             onChange={(newDate) =>
               setFormData((prev) => ({
                 ...prev,
@@ -36,7 +36,7 @@ const HospitalForm = () => {
         <TextField
           label="Criteria"
           variant="standard"
-          value={formData['criteria']}
+          value={formData['criteria'] ?? ''}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
             setFormData((prev) => ({
               ...prev,

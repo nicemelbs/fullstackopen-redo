@@ -68,7 +68,7 @@ const PatientInfo = () => {
       )}
 
       <FormContextProvider>
-        <AddEntryForm isVisible={formVisible} />
+        <AddEntryForm isVisible={formVisible} patientId={patient.id} />
       </FormContextProvider>
       <Typography>ssn: {patient.ssn}</Typography>
       <Typography>occupation: {patient.occupation}</Typography>

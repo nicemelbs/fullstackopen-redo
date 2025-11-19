@@ -10,7 +10,14 @@ import {
 } from '@mui/material';
 
 import { useContext, useEffect } from 'react';
-import { EntryType } from '../../../types';
+import {
+  Entry,
+  EntryFormFields,
+  EntryType,
+  HealthCheckEntry,
+  HospitalEntry,
+  OccupationalHealthcareEntry,
+} from '../../../types';
 import HealthCheckForm from './HealthCheckForm';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -19,12 +26,15 @@ import DiagnosisCodesSelector from './DiagnosisCodesSelector';
 import OccupationalHealthcareForm from './OccupationalHealthcareForm';
 import HospitalForm from './HostpitalForm';
 import { FormContext } from './FormContextProvider';
+import patients from '../../../services/patients';
+import { assertNever } from '../../../utils';
 
 interface Props {
   isVisible: boolean;
+  patientId: string;
 }
 const AddEntryForm = (props: Props) => {
-  const { isVisible } = props;
+  const { isVisible, patientId } = props;
   const entryTypeValues = Object.values(EntryType) as EntryType[];
   const { formData, setFormData } = useContext(FormContext)!;
 
@@ -52,7 +62,85 @@ const AddEntryForm = (props: Props) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('form submitted', formData);
+
+    if (validForm(formData)) {
+      const cleanData = reshapeFormData(formData);
+
+      console.log('submitting to backend:', patientId, cleanData);
+      patients.addEntryToPatient(patientId, cleanData);
+    } else {
+      console.log('form not submitted:', formData);
+    }
+  };
+
+  const validForm = (data: unknown): data is EntryFormFields => {
+    return (
+      data !== null &&
+      typeof data === 'object' &&
+      'entryType' in data &&
+      typeof data.entryType === 'string' &&
+      'description' in data &&
+      typeof data.description === 'string' &&
+      'entryDate' in data &&
+      typeof data.entryDate === 'object' &&
+      'specialist' in data &&
+      typeof data.specialist === 'string' &&
+      'diagnoses' in data &&
+      data.diagnoses instanceof Array
+    );
+  };
+  const reshapeFormData = (data: EntryFormFields): Omit<Entry, 'id'> => {
+    //check fields
+    let reshapedFormData: Omit<Entry, 'id'> = {
+      type: data.entryType,
+      date: dayjs(data.entryDate).format('YYYY-MM-DD'),
+      description: data.description,
+      specialist: data.specialist,
+      diagnosisCodes: data.diagnoses ?? undefined,
+    };
+
+    switch (reshapedFormData.type) {
+      case EntryType.HealthCheck:
+        reshapedFormData = {
+          ...reshapedFormData,
+          healthCheckRating: Number(data.healthCheckRating),
+        } as HealthCheckEntry;
+
+        break;
+
+      case EntryType.Hospital:
+        reshapedFormData = {
+          ...reshapedFormData,
+          discharge: {
+            date: dayjs(data.dischargeDate).format('YYYY-MM-DD'),
+            criteria: data.criteria,
+          },
+        } as HospitalEntry;
+        break;
+      case EntryType.OccupationalHealthcare:
+        reshapedFormData = {
+          ...reshapedFormData,
+          employerName: data.employerName ?? undefined,
+          sickLeave:
+            data.sickLeave &&
+            data.sickLeave.startDate !== null &&
+            data.sickLeave.endDate !== null
+              ? {
+                  startDate: dayjs(data.sickLeave.startDate).format(
+                    'YYYY-MM-DD'
+                  ),
+
+                  endDate: dayjs(data.sickLeave.endDate).format('YYYY-MM-DD'),
+                }
+              : undefined,
+        } as OccupationalHealthcareEntry;
+        break;
+
+      default:
+        assertNever(reshapedFormData.type);
+    }
+
+    return reshapedFormData;
   };
 
   return (
@@ -69,10 +157,12 @@ const AddEntryForm = (props: Props) => {
           <InputLabel>Entry Type</InputLabel>
           <Select
             label="Entry type"
-            // value={entryType}
             value={formData['entryType']}
             onChange={(e) =>
-              setFormData((prev) => ({ ...prev, entryType: e.target.value }))
+              setFormData((prev) => ({
+                ...prev,
+                entryType: e.target.value as EntryType,
+              }))
             }
           >
             {entryTypeValues.map((v) => (
@@ -86,9 +176,12 @@ const AddEntryForm = (props: Props) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Date"
-              value={formData['entryDate'] as Dayjs}
+              value={formData['entryDate']}
               onChange={(newValue) =>
-                setFormData((prev) => ({ ...prev, entryDate: newValue }))
+                setFormData((prev) => ({
+                  ...prev,
+                  entryDate: newValue as Dayjs,
+                }))
               }
               maxDate={dayjs()}
               format="YYYY-MM-DD"
@@ -96,15 +189,35 @@ const AddEntryForm = (props: Props) => {
           </LocalizationProvider>
         </FormControl>
         <FormControl fullWidth>
-          <TextField variant="standard" required label="Description" />
+          <TextField
+            variant="standard"
+            value={formData['description']}
+            onChange={(event) =>
+              setFormData((prev) => ({
+                ...prev,
+                description: event.target.value,
+              }))
+            }
+            required
+            label="Description"
+          />
         </FormControl>
         <FormControl fullWidth style={{ marginTop: 15 }}></FormControl>
         <FormControl fullWidth>
-          <TextField variant="standard" required label="Specialist" />
+          <TextField
+            value={formData['specialist'] ?? ''}
+            onChange={(event) =>
+              setFormData((prev) => ({
+                ...prev,
+                specialist: event.target.value,
+              }))
+            }
+            variant="standard"
+            required
+            label="Specialist"
+          />
         </FormControl>
-        {otherFormFields(
-          (formData['entryType'] ?? EntryType.HealthCheck) as EntryType
-        )}
+        {otherFormFields(formData['entryType'])}
 
         <DiagnosisCodesSelector />
 

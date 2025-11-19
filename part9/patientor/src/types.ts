@@ -1,3 +1,5 @@
+import { Dayjs } from 'dayjs';
+
 export interface Diagnosis {
   code: string;
   name: string;
@@ -70,4 +72,19 @@ export interface Patient {
   gender: Gender;
   dateOfBirth: string;
   entries: Entry[];
+}
+
+export interface EntryFormFields {
+  entryType: EntryType;
+  entryDate: Dayjs;
+  specialist: string;
+  description: string;
+  diagnoses?: string[];
+
+  //sub-type specific:
+  healthCheckRating: number | null;
+  dischargeDate: Dayjs | null;
+  criteria: string;
+  employerName: string;
+  sickLeave: { startDate: Dayjs | null; endDate: Dayjs | null };
 }
