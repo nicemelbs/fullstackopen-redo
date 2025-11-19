@@ -6,11 +6,10 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   TextField,
 } from '@mui/material';
 
-import { useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { EntryType } from '../../../types';
 import HealthCheckForm from './HealthCheckForm';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -19,17 +18,25 @@ import dayjs, { Dayjs } from 'dayjs';
 import DiagnosisCodesSelector from './DiagnosisCodesSelector';
 import OccupationalHealthcareForm from './OccupationalHealthcareForm';
 import HospitalForm from './HostpitalForm';
+import { FormContext } from './FormContextProvider';
 
 interface Props {
   isVisible: boolean;
 }
 const AddEntryForm = (props: Props) => {
   const { isVisible } = props;
-  const [entryType, setEntryType] = useState<EntryType>(EntryType.Hospital);
-  const currentDate = dayjs();
-  const [entryDate, setEntryDate] = useState<Dayjs | null>(currentDate);
-
   const entryTypeValues = Object.values(EntryType) as EntryType[];
+  const { formData, setFormData } = useContext(FormContext)!;
+
+  //initialize formData
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      entryType: EntryType.HealthCheck,
+      entryDate: dayjs(),
+    }));
+  }, [setFormData]);
+
   if (!isVisible) return null;
 
   const otherFormFields = (type: EntryType) => {
@@ -45,7 +52,7 @@ const AddEntryForm = (props: Props) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('form submitted');
+    console.log('form submitted', formData);
   };
 
   return (
@@ -62,9 +69,10 @@ const AddEntryForm = (props: Props) => {
           <InputLabel>Entry Type</InputLabel>
           <Select
             label="Entry type"
-            value={entryType}
-            onChange={(event: SelectChangeEvent<EntryType>) =>
-              setEntryType(event.target.value as EntryType)
+            // value={entryType}
+            value={formData['entryType']}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, entryType: e.target.value }))
             }
           >
             {entryTypeValues.map((v) => (
@@ -78,9 +86,11 @@ const AddEntryForm = (props: Props) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Date"
-              value={entryDate}
-              onChange={(newValue) => setEntryDate(newValue)}
-              maxDate={currentDate}
+              value={formData['entryDate'] as Dayjs}
+              onChange={(newValue) =>
+                setFormData((prev) => ({ ...prev, entryDate: newValue }))
+              }
+              maxDate={dayjs()}
               format="YYYY-MM-DD"
             />
           </LocalizationProvider>
@@ -92,7 +102,9 @@ const AddEntryForm = (props: Props) => {
         <FormControl fullWidth>
           <TextField variant="standard" required label="Specialist" />
         </FormControl>
-        {otherFormFields(entryType)}
+        {otherFormFields(
+          (formData['entryType'] ?? EntryType.HealthCheck) as EntryType
+        )}
 
         <DiagnosisCodesSelector />
 

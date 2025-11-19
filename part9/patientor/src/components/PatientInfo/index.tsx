@@ -8,6 +8,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EntriesList from '../EntriesList';
 import { Button, Container, Divider, Typography } from '@mui/material';
 import AddEntryForm from './AddEntryForm';
+import FormContextProvider from './AddEntryForm/FormContextProvider';
 const PatientInfo = () => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const match = useMatch('patients/:id');
@@ -46,6 +47,7 @@ const PatientInfo = () => {
   if (!patient) {
     return <div>No matching entry.</div>;
   }
+
   return (
     <Container style={{ marginTop: '0.5em' }}>
       <Divider hidden />
@@ -64,7 +66,10 @@ const PatientInfo = () => {
           Cancel
         </Button>
       )}
-      <AddEntryForm isVisible={formVisible} />
+
+      <FormContextProvider>
+        <AddEntryForm isVisible={formVisible} />
+      </FormContextProvider>
       <Typography>ssn: {patient.ssn}</Typography>
       <Typography>occupation: {patient.occupation}</Typography>
       <EntriesList entries={patient.entries} />

@@ -5,13 +5,13 @@ import {
   Select,
   SelectChangeEvent,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import diagnosis from '../../../services/diagnosis';
 import { Diagnosis } from '../../../types';
+import { FormContext } from './FormContextProvider';
 
 const DiagnosisCodesSelector = () => {
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
-  const [selectedDiagnoses, setSelectedDiagnoses] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -27,12 +27,21 @@ const DiagnosisCodesSelector = () => {
     fetchAll();
   }, []);
 
+  const { formData, setFormData } = useContext(FormContext)!;
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, diagnoses: [] as string[] }));
+  }, [setFormData]);
+
   if (diagnoses.length === 0) return null;
 
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
 
-    setSelectedDiagnoses(typeof value === 'string' ? value.split(',') : value);
+    setFormData((prev) => ({
+      ...prev,
+      diagnoses: typeof value === 'string' ? value.split(',') : value,
+    }));
   };
 
   return (
@@ -41,7 +50,7 @@ const DiagnosisCodesSelector = () => {
       <Select
         label="Select diagnoses"
         multiple
-        value={selectedDiagnoses}
+        value={formData['diagnoses'] as string[]}
         onChange={handleChange}
         renderValue={(selected) => {
           if (selected.length === 0) {

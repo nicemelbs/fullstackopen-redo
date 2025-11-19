@@ -1,29 +1,28 @@
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-} from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { HealthCheckRating } from '../../../types';
-import { useState } from 'react';
+import { useContext } from 'react';
+import { FormContext } from './FormContextProvider';
 
 const HealthCheckForm = () => {
-  const [healthCheckRating, setHealthCheckRating] = useState<string>('');
   const healthCheckValues = Object.values(HealthCheckRating).filter(
     (v) => typeof v === 'number'
   ) as HealthCheckRating[];
+
+  const { formData, setFormData } = useContext(FormContext)!;
 
   return (
     <FormControl fullWidth style={{ marginTop: 20 }}>
       <InputLabel>Health Check Rating</InputLabel>
       <Select
         label="Health Check Rating"
-        value={healthCheckRating}
+        value={formData['healthCheckRating'] ?? ''}
         required
         fullWidth
-        onChange={(event: SelectChangeEvent<string>) =>
-          setHealthCheckRating(event.target.value)
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev,
+            healthCheckRating: e.target.value,
+          }))
         }
       >
         {healthCheckValues.map((v) => (
