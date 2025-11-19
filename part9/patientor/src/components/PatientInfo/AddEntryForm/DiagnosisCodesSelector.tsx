@@ -8,7 +8,7 @@ import {
 import { useContext, useEffect, useState } from 'react';
 import diagnosis from '../../../services/diagnosis';
 import { Diagnosis } from '../../../types';
-import { FormContext } from './FormContextProvider';
+import { FormContext } from './FormContext';
 
 const DiagnosisCodesSelector = () => {
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);

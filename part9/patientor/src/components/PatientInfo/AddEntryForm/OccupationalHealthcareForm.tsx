@@ -2,7 +2,7 @@ import { Box, Button, FormControl, TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useContext, useState } from 'react';
-import { FormContext } from './FormContextProvider';
+import { FormContext } from './FormContext';
 
 const OccupationalHealthcareForm = () => {
   const [sickLeave, setSickLeave] = useState<boolean>(false);

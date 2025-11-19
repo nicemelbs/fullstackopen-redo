@@ -3,7 +3,7 @@ import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { useContext, useEffect } from 'react';
-import { FormContext } from './FormContextProvider';
+import { FormContext } from './FormContext';
 
 const HospitalForm = () => {
   const { formData, setFormData } = useContext(FormContext)!;

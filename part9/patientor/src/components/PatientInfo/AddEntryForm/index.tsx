@@ -25,7 +25,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import DiagnosisCodesSelector from './DiagnosisCodesSelector';
 import OccupationalHealthcareForm from './OccupationalHealthcareForm';
 import HospitalForm from './HostpitalForm';
-import { FormContext } from './FormContextProvider';
+import { FormContext } from './FormContext';
 import patients from '../../../services/patients';
 import { assertNever } from '../../../utils';
 

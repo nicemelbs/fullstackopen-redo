@@ -1,7 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { HealthCheckRating } from '../../../types';
 import { useContext } from 'react';
-import { FormContext } from './FormContextProvider';
+import { FormContext } from './FormContext';
 
 const HealthCheckForm = () => {
   const healthCheckValues = Object.values(HealthCheckRating).filter(
@@ -21,7 +21,7 @@ const HealthCheckForm = () => {
         onChange={(e) =>
           setFormData((prev) => ({
             ...prev,
-            healthCheckRating: e.target.value,
+            healthCheckRating: Number(e.target.value),
           }))
         }
       >
