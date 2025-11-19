@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import {
+  Entry,
   NewEntry,
   NewPatientEntry,
   Patient,
@@ -70,18 +71,15 @@ router.post(
   newEntryParser,
   (
     req: Request<{ id: string }, unknown, NewEntry>,
-    res: Response<Patient | undefined>
+    res: Response<Entry | undefined>
   ) => {
     const patientId = req.params.id;
 
     const entryToAdd = req.body;
 
-    const udpatedPatient = patientsService.addEntryToPatient(
-      patientId,
-      entryToAdd
-    );
+    const newEntry = patientsService.addEntryToPatient(patientId, entryToAdd);
 
-    res.status(201).send(udpatedPatient);
+    res.status(201).send(newEntry);
   }
 );
 

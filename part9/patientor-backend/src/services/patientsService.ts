@@ -69,7 +69,7 @@ const parseDiagnosisCodes = (
 const addEntryToPatient = (
   patientId: string,
   entry: NewEntry
-): Patient | undefined => {
+): Entry | undefined => {
   const foundPatient = patients.find((p) => p.id === patientId);
 
   if (!foundPatient) return undefined;
@@ -91,7 +91,7 @@ const addEntryToPatient = (
 
   foundPatient.entries.push(completedEntry);
 
-  return foundPatient;
+  return completedEntry;
 };
 
 export default {

@@ -32,9 +32,10 @@ import { assertNever } from '../../../utils';
 interface Props {
   isVisible: boolean;
   patientId: string;
+  handleNewEntry: (newEntry: Entry) => void;
 }
 const AddEntryForm = (props: Props) => {
-  const { isVisible, patientId } = props;
+  const { isVisible, patientId, handleNewEntry } = props;
   const entryTypeValues = Object.values(EntryType) as EntryType[];
   const { formData, setFormData } = useContext(FormContext)!;
 
@@ -60,16 +61,14 @@ const AddEntryForm = (props: Props) => {
     }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (validForm(formData)) {
       const cleanData = reshapeFormData(formData);
 
-      console.log('submitting to backend:', patientId, cleanData);
-      patients.addEntryToPatient(patientId, cleanData);
-    } else {
-      console.log('form not submitted:', formData);
+      const newEntry = await patients.addEntryToPatient(patientId, cleanData);
+      handleNewEntry(newEntry);
     }
   };
 

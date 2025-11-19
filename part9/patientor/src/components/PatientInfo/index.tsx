@@ -1,7 +1,7 @@
 import { useMatch } from 'react-router-dom';
 import patients from '../../services/patients';
 import { useEffect, useState } from 'react';
-import { Patient } from '../../types';
+import { Entry, Patient } from '../../types';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -14,6 +14,7 @@ const PatientInfo = () => {
   const match = useMatch('patients/:id');
 
   const [formVisible, setFormVisible] = useState<boolean>(false);
+  const [entries, setEntries] = useState<Entry[]>([]);
 
   useEffect(() => {
     if (match) {
@@ -22,6 +23,7 @@ const PatientInfo = () => {
           const p = await patients.getOneById(match.params.id);
 
           setPatient(p);
+          setEntries(p.entries);
         }
       };
       fetchPatient();
@@ -48,6 +50,10 @@ const PatientInfo = () => {
     return <div>No matching entry.</div>;
   }
 
+  const handleNewEntry = (newEntry: Entry) => {
+    setEntries(entries.concat(newEntry));
+  };
+
   return (
     <Container style={{ marginTop: '0.5em' }}>
       <Divider hidden />
@@ -68,11 +74,15 @@ const PatientInfo = () => {
       )}
 
       <FormContextProvider>
-        <AddEntryForm isVisible={formVisible} patientId={patient.id} />
+        <AddEntryForm
+          handleNewEntry={handleNewEntry}
+          isVisible={formVisible}
+          patientId={patient.id}
+        />
       </FormContextProvider>
       <Typography>ssn: {patient.ssn}</Typography>
       <Typography>occupation: {patient.occupation}</Typography>
-      <EntriesList entries={patient.entries} />
+      <EntriesList entries={entries} />
     </Container>
   );
 };
