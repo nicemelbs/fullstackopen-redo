@@ -74,11 +74,8 @@ router.post(
     res: Response<Entry | undefined>
   ) => {
     const patientId = req.params.id;
-
     const entryToAdd = req.body;
-
     const newEntry = patientsService.addEntryToPatient(patientId, entryToAdd);
-
     res.status(201).send(newEntry);
   }
 );

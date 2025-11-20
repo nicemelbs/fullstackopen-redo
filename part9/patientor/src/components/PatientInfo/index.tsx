@@ -9,12 +9,19 @@ import EntriesList from '../EntriesList';
 import { Button, Container, Divider, Typography } from '@mui/material';
 import AddEntryForm from './AddEntryForm';
 import FormContextProvider from './AddEntryForm/FormContextProvider';
+import Notification from '../Notification';
 const PatientInfo = () => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const match = useMatch('patients/:id');
 
   const [formVisible, setFormVisible] = useState<boolean>(false);
   const [entries, setEntries] = useState<Entry[]>([]);
+
+  const [notificationMessage, setNotificationMessage] = useState<string>('');
+  const [notificationSeverity, setNotificationSeverity] = useState<
+    'success' | 'error'
+  >('success');
+  const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (match) {
@@ -54,8 +61,25 @@ const PatientInfo = () => {
     setEntries(entries.concat(newEntry));
   };
 
+  const displaySuccessNotification = (message: string) => {
+    setNotificationMessage(message);
+    setNotificationSeverity('success');
+    setNotificationOpen(true);
+  };
+
+  const displayErrorNotification = (message: string) => {
+    setNotificationMessage(message);
+    setNotificationSeverity('error');
+    setNotificationOpen(true);
+  };
   return (
     <Container style={{ marginTop: '0.5em' }}>
+      <Notification
+        open={notificationOpen}
+        message={notificationMessage}
+        severity={notificationSeverity}
+        onClose={() => setNotificationOpen(false)}
+      />
       <Divider hidden />
       <Typography variant="h4">
         {patient.name} <span>{getGenderIcon(patient.gender)}</span>
@@ -67,17 +91,20 @@ const PatientInfo = () => {
         </Button>
       )}
 
-      {formVisible && (
+      {/* {formVisible && (
         <Button onClick={() => setFormVisible(false)} variant="contained">
           Cancel
         </Button>
-      )}
+      )} */}
 
       <FormContextProvider>
         <AddEntryForm
           handleNewEntry={handleNewEntry}
+          hideForm={() => setFormVisible(false)}
           isVisible={formVisible}
           patientId={patient.id}
+          notifyError={displayErrorNotification}
+          notifySuccess={displaySuccessNotification}
         />
       </FormContextProvider>
       <Typography>ssn: {patient.ssn}</Typography>

@@ -33,9 +33,19 @@ interface Props {
   isVisible: boolean;
   patientId: string;
   handleNewEntry: (newEntry: Entry) => void;
+  hideForm: () => void;
+  notifySuccess: (message: string) => void;
+  notifyError: (message: string) => void;
 }
 const AddEntryForm = (props: Props) => {
-  const { isVisible, patientId, handleNewEntry } = props;
+  const {
+    hideForm,
+    isVisible,
+    patientId,
+    handleNewEntry,
+    notifyError,
+    notifySuccess,
+  } = props;
   const entryTypeValues = Object.values(EntryType) as EntryType[];
   const { formData, setFormData } = useContext(FormContext)!;
 
@@ -64,11 +74,22 @@ const AddEntryForm = (props: Props) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (validForm(formData)) {
-      const cleanData = reshapeFormData(formData);
+    try {
+      if (validForm(formData)) {
+        const cleanData = reshapeFormData(formData);
 
-      const newEntry = await patients.addEntryToPatient(patientId, cleanData);
-      handleNewEntry(newEntry);
+        const newEntry = await patients.addEntryToPatient(patientId, cleanData);
+        handleNewEntry(newEntry);
+        notifySuccess('New entry added!');
+        hideForm();
+      }
+    } catch (error: unknown) {
+      let errorMessage = 'Error: ';
+      if (error instanceof Error) {
+        errorMessage += error.message;
+      } else errorMessage = 'Unknown error.';
+
+      notifyError(errorMessage);
     }
   };
 
@@ -222,6 +243,14 @@ const AddEntryForm = (props: Props) => {
 
         <Grid style={{ marginTop: 20, marginBottom: 50 }}>
           <Grid item>
+            <Button
+              onClick={hideForm}
+              style={{ float: 'left' }}
+              type="button"
+              variant="outlined"
+            >
+              Cancel
+            </Button>
             <Button
               style={{ float: 'right' }}
               type="submit"

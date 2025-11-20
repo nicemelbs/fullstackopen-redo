@@ -1,7 +1,11 @@
 import express from 'express';
 import diagnosesRouter from './src/routes/diagnoses';
 import patientsRouter from './src/routes/patients';
+
+const cors = require('cors');
+
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.get('/api/ping', (_req, res) => {
